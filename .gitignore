@@ -1,0 +1,32 @@
+# dependencies
+node_modules
+
+# env
+.env
+.env.local
+.env.production
+
+# next
+.next
+out
+
+# logs
+logs
+*.log
+
+# build
+dist
+build
+
+# docker
+.docker
+
+# OS
+.DS_Store
+Thumbs.db
+
+# vscode
+.vscode
+
+# coverage
+coverage
