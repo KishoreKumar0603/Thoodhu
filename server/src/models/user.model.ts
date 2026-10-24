@@ -6,14 +6,17 @@ export interface IUser extends Document {
   email: string;
   password: string;
   avatar?: string;
-  isVerified: boolean;
-  lastSeen: Date;
-  isLocked: {
-    locked: boolean,
-    expiresAt: Date,
-  }
   otp: {
     code: string;
+    expiresAt: Date;
+    attempts: number;
+  };
+  isVerified: boolean;
+  lastSeen: Date;
+
+  lockedUntil: Date | null;
+  isLocked: {
+    locked: boolean;
     expiresAt: Date;
   };
   comparePassword(password: string): Promise<boolean>;
@@ -28,12 +31,14 @@ const userSchema = new Schema<IUser>(
       unique: true,
       minLength: 5,
       maxLength: 30,
+      index: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
+      index: true,
     },
     password: {
       type: String,
@@ -60,15 +65,9 @@ const userSchema = new Schema<IUser>(
         default: 0,
       },
     },
-    isLocked:{
-      locked:{
-        type:Boolean,
-        default:false,
-      },
-      expiresAt:{
-        type: Date,
-        default:Date.now(),
-      }
+    lockedUntil: {
+      type: Date,
+      default: null,
     },
     isVerified: {
       type: Boolean,

@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler";
-import authRoutes from "./routes/auth.routes"
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -14,13 +14,12 @@ app.use(
   cors({
     origin: true,
     credentials: true,
-  })
+  }),
 );
 
 app.use(helmet());
 
 app.use("/api/auth", authRoutes);
-
 app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -28,6 +27,6 @@ app.get("/", (_req, res) => {
   });
 });
 
-app.use(errorHandler)
+app.use(errorHandler);
 
 export default app;
