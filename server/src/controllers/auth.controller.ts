@@ -9,20 +9,30 @@ import { generateOtp } from "../utils/generateOtp";
 import { sendOtpEmail } from "../services/email.service";
 import { verifyAccountTemplate } from "../utils/mailContent.utils";
 import { validate } from "../utils/helperFuntions";
+import { string } from "zod";
 
 export const register = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { username, email, password } = req.body;
 
-    if (!username?.trim() || !email?.trim() || !password?.trim()) {
+    if (
+      typeof username !== "string" ||
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      !username?.trim() ||
+      !email?.trim() ||
+      !password.trim()
+    ) {
       return next(new AppError("All Fields are Required", 400));
     }
 
-    if (!validate.isEmail(email)) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!validate.isEmail(normalizedEmail)) {
       return next(new AppError("Please enter valid email id", 400));
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return next(new AppError("User Already exists", 400));
@@ -31,7 +41,7 @@ export const register = asyncHandler(
     const user = await User.create({
       username,
       password,
-      email,
+      email: normalizedEmail,
     });
 
     const otp = generateOtp();
@@ -49,9 +59,13 @@ export const register = asyncHandler(
     const content = verifyAccountTemplate(user.username, otp);
 
     //Temporarily Stopped for Development
-    // await sendOtpEmail(user.email, "Verify Account - OTP", content);
 
-    console.log("The OTP for the User is " + otp);
+    if (process.env.NODE_ENV != "development") {
+      await sendOtpEmail(user.email, "Verify Account - OTP", content);
+    } else {
+      console.log("The OTP for the User is " + otp);
+    }
+
     return res.status(201).json(apiResponse(true, "OTP sent successfully"));
   },
 );
@@ -240,10 +254,12 @@ export const resendOTP = asyncHandler(
     await user.save();
     const content = verifyAccountTemplate(user.username, otp);
 
-    console.log("Otp : ", otp);
-
-    //Unavail for development purpose
-    // await sendOtpEmail(user.email, "Thoodhu OTP verification", content);
+    //Mail services are off for development
+    if (process.env.NODE_ENV != "development") {
+      await sendOtpEmail(user.email, "Thoodhu OTP verification", content);
+    } else {
+      console.log("Otp : ", otp);
+    }
 
     return res
       .status(200)

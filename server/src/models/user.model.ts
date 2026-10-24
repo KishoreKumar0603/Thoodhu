@@ -31,14 +31,14 @@ const userSchema = new Schema<IUser>(
       unique: true,
       minLength: 5,
       maxLength: 30,
-      index:true,
+      index: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
-      index:true,
+      index: true,
     },
     password: {
       type: String,
